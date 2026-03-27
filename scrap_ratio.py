@@ -2,7 +2,7 @@ import argparse
 import asyncio
 import logging
 from dotenv import load_dotenv
-from util import format_bytes
+from util import format_bytes, list_scrappers
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -11,13 +11,14 @@ logger = logging.getLogger("scrap_ratio")
 from scraper import get_stats
 
 async def main():
+    all_scrappers = list_scrappers()
     parser = argparse.ArgumentParser(description="Get stats from Torr9.net or C411.org via API")
-    parser.add_argument("--site", choices=["torr9", "c411", "both"], required=True, help="Site to get stats from")
+    parser.add_argument("--site", choices=[*all_scrappers, "all"], required=True, help="Site to get stats from")
     parser.add_argument("--no-headless", action="store_false", dest="headless", default=True, help="Run browser in non-headless mode")
     
     args = parser.parse_args()
     
-    sites = ["torr9", "c411"] if args.site == "both" else [args.site]
+    sites = all_scrappers if args.site == "all" else [args.site]
     
     for s in sites:
         print(f"--- {s.upper()} ---")
