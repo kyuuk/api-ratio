@@ -1,18 +1,15 @@
-import asyncio, os, json, logging
-from typing import Dict, Any, Tuple, Optional
+import asyncio
+import os
+import json
+import logging
+from typing import Dict, Any, Optional
 from playwright.async_api import async_playwright
 from dotenv import load_dotenv
 
 load_dotenv()
 logger = logging.getLogger("scraper")
 
-def format_bytes(size: float) -> str:
-    if size is None or size < 0: return "0 B"
-    for unit in ['B', 'KB', 'MB', 'GB', 'TB', 'PB']:
-        if size < 1024:
-            return f"{size:.2f} {unit}"
-        size /= 1024
-    return f"{size:.2f} EB"
+default_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 async def get_torr9_token() -> Optional[str]:
     """Automated login to get a fresh Torr9 token if missing or expired"""
@@ -25,7 +22,7 @@ async def get_torr9_token() -> Optional[str]:
     
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        ctx = await browser.new_context(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        ctx = await browser.new_context(user_agent=default_user_agent)
         page = await ctx.new_page()
         try:
             logger.info("Torr9: Attempting automated login...")
@@ -65,7 +62,7 @@ async def get_c411_cookies() -> bool:
     
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        ctx = await browser.new_context(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        ctx = await browser.new_context(user_agent=default_user_agent)
         page = await ctx.new_page()
         try:
             logger.info("C411: Attempting automated login...")
@@ -98,13 +95,13 @@ async def get_c411_cookies() -> bool:
             await browser.close()
     return False
 
-async def get_stats(site: str, headless: bool = True) -> Dict[str, str]:
+async def get_stats(site: str, headless: bool = True) -> Dict[str, Any]:
     """Scrapes the site and returns a dictionary of stats (ratio, upload, download)"""
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=headless)
-        context = await browser.new_context(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        context = await browser.new_context(user_agent=default_user_agent)
         try:
-            res = {"ratio": "N/A", "upload": "N/A", "download": "N/A"}
+            res : Dict[str, Any] = {"ratio": "N/A", "upload": "N/A", "download": "N/A"}
             
             if site == "torr9":
                 token = None
@@ -138,9 +135,8 @@ async def get_stats(site: str, headless: bool = True) -> Dict[str, str]:
                 api_data = await response.json()
                 up = api_data.get("total_uploaded_bytes", 0)
                 dl = api_data.get("total_downloaded_bytes", 0)
-                res["upload"] = format_bytes(up)
-                res["download"] = format_bytes(dl)
-                res["ratio"] = f"{up / dl:.2f}" if dl > 0 else "∞" if up > 0 else "0.00"
+                res["raw_upload"] = up
+                res["raw_download"] = dl               
 
             elif site == "c411":
                 cookie_path = "c411_cookies.json"
@@ -154,7 +150,6 @@ async def get_stats(site: str, headless: bool = True) -> Dict[str, str]:
                 
                 response = await context.request.get("https://c411.org/api/auth/me")
                 api_data = await response.json() if response.ok else {}
-                
                 if not api_data.get("authenticated"):
                     logger.warning("C411: Session expired or missing, logging in...")
                     if await get_c411_cookies():
@@ -168,13 +163,8 @@ async def get_stats(site: str, headless: bool = True) -> Dict[str, str]:
                 if user_data:
                     up = user_data.get("uploaded", 0)
                     dl = user_data.get("downloaded", 0)
-                    res["upload"] = format_bytes(up)
-                    res["download"] = format_bytes(dl)
-                    ratio = user_data.get("ratio")
-                    if ratio is not None:
-                        res["ratio"] = f"{ratio:.2f}" if isinstance(ratio, (int, float)) else str(ratio)
-                    else:
-                        res["ratio"] = f"{up / dl:.2f}" if dl > 0 else "∞" if up > 0 else "0.00"
+                    res["raw_upload"] = up
+                    res["raw_download"] = dl
                 else:
                     return {"ratio": "Auth Error", "upload": "N/A", "download": "N/A"}
 

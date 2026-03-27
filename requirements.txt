@@ -4,3 +4,4 @@ fastapi
 uvicorn
 apscheduler
 playwright-stealth
+prometheus_client

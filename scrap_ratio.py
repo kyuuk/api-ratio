@@ -1,11 +1,8 @@
 import argparse
 import asyncio
-import os
-import sys
-import json
 import logging
-from playwright.async_api import async_playwright
 from dotenv import load_dotenv
+from util import format_bytes
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -26,9 +23,9 @@ async def main():
         print(f"--- {s.upper()} ---")
         stats = await get_stats(s, args.headless)
         if isinstance(stats, dict):
-            print(f"Ratio: {stats['ratio']}")
-            print(f"Upload: {stats['upload']}")
-            print(f"Download: {stats['download']}")
+            print(f"Ratio: {stats['raw_upload'] / stats['raw_download'] if stats['raw_download'] > 0 else 999 if stats['raw_upload'] > 0 else 0}")
+            print(f"Upload: {format_bytes(stats['raw_upload'])}")
+            print(f"Download: {format_bytes(stats['raw_download'])}")
         else:
             print(stats)
 
