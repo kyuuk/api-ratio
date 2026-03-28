@@ -6,7 +6,7 @@ from typing import Dict, Any
 from playwright.async_api import async_playwright, BrowserContext, Page
 from dotenv import load_dotenv
 
-from util import default_user_agent, load_file, write_file
+from util import default_user_agent, load_file, write_file, MissingCredentialsError
 
 load_dotenv()
 logger = logging.getLogger()
@@ -18,7 +18,8 @@ USER_STATS_URL = "https://c411.org/api/auth/me"
 async def _get_c411_cookies(ctx: BrowserContext, page: Page) -> bool:
     """Automated login to get fresh C411 cookies if missing or expired"""
     user, psw = os.getenv("C411_USER"), os.getenv("C411_PASS")
-    if not (user and psw): return False
+    if not (user and psw): 
+        raise MissingCredentialsError("Missing C411 Username or Password")
     
 
     try:
@@ -83,8 +84,10 @@ async def get_stats(headless: bool = True) -> Dict[str, Any]:
                 res["raw_download"] = dl
 
             return res
+        except MissingCredentialsError as e:
+            raise e
         except Exception as e:
             logger.error(f"Error : {e}")
-            return {"ratio": "Error", "upload": "N/A", "download": "N/A"}
+            return {"raw_ratio": "Error", "raw_upload": "N/A", "raw_download": "N/A"}
         finally:
             await browser.close()

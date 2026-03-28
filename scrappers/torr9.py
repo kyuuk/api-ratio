@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional
 from playwright.async_api import async_playwright, Page
 from dotenv import load_dotenv
 
-from util import default_user_agent, load_file, write_file
+from util import default_user_agent, load_file, write_file, MissingCredentialsError
 
 load_dotenv()
 logger = logging.getLogger()
@@ -20,8 +20,7 @@ async def _get_torr9_token(page: Page) -> Optional[str]:
     psw = os.getenv("TORR9_PASSWORD") or os.getenv("TORR9_PASS") or os.getenv("TOR9_PASS")
     
     if not (user and psw):
-        logger.error("Torr9: Credentials (USER/PASSWORD) missing in .env file!")
-        return None
+        raise MissingCredentialsError("Missing Torr9 Username or Password")
     
 
     try:
@@ -83,7 +82,7 @@ async def get_stats(headless: bool = True) -> Dict[str, Any]:
                 )
         
         if not response.ok:
-            return {"ratio": f"API Error {response.status}", "upload": "N/A", "download": "N/A"}
+            return {"ratio": f"API Error {response.status}", "raw_upload": "N/A", "raw_download": "N/A"}
         
         api_data = await response.json()
         up = api_data.get("total_uploaded_bytes", 0)
@@ -92,8 +91,10 @@ async def get_stats(headless: bool = True) -> Dict[str, Any]:
         res["raw_download"] = dl
 
         return res
+    except MissingCredentialsError as e:
+        raise e
     except Exception as e:
         logger.error(f"Error : {e}")
-        return {"ratio": "Error", "upload": "N/A", "download": "N/A"}
+        return {"ratio": "Error", "raw_upload": "N/A", "raw_download": "N/A"}
     finally:
         await browser.close()

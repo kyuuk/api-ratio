@@ -59,3 +59,6 @@ class UnknownTrackerError(Exception):
 
 class ScrappingError(Exception):
     pass
+
+class MissingCredentialsError(Exception):
+    pass
