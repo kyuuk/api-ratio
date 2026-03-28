@@ -25,6 +25,30 @@ def format_bytes(size: float) -> str:
     return f"{size:.2f} EB"
 
 
+def parse_bytes(size_str: str) -> float:
+    if not size_str:
+        return 0.0
+    units = {
+        "B": 1,
+        "KB": 1024,
+        "MB": 1024**2,
+        "GB": 1024**3,
+        "TB": 1024**4,
+        "PB": 1024**5,
+        "EB": 1024**6,
+        "KIB": 1024,
+        "MIB": 1024**2,
+        "GIB": 1024**3,
+        "TIB": 1024**4,
+        "PIB": 1024**5,
+        "EIB": 1024**6,
+    }
+    parts = size_str.strip().split()
+    value = float(parts[0])
+    unit = parts[1].upper()
+    return value * units.get(unit, 1)
+
+
 def load_file(filename, is_json: bool = False):
     config_dir = os.getenv("CONFIG_DIR", ".config")
     path = Path(config_dir)
