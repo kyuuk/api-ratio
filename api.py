@@ -10,7 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from dotenv import load_dotenv
 
 from scraper import get_stats
-from util import format_bytes
+from util import format_bytes, list_scrappers
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -25,7 +25,7 @@ download_gauge = Gauge("download", "download", ["tracker"], unit="bytes")
 
 async def update_all():
     global ratios_cache
-    for site in ["torr9", "c411"]:
+    for site in list_scrappers():
         logger.info(f"updating stats for tracker : {site}")
         stats = await get_stats(site)
         raw_ratio = stats["raw_upload"] / stats["raw_download"] if stats["raw_download"] > 0 else 999 if stats["raw_upload"] > 0 else 0
