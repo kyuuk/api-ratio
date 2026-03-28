@@ -1,0 +1,13 @@
+services:
+  scrap-ratio:
+    build: .
+    container_name: scrap-ratio-api
+    restart: always
+    ports:
+      - "8679:8679"
+    env_file:
+      - .env
+    volumes:
+      - ./config:/app/.config
+    environment:
+      - CONFIG_DIR=/app/.config

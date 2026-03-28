@@ -1,0 +1,13 @@
+__pycache__/
+.git/
+.config/
+*.json
+*.txt
+*.rar
+.env
+Dockerfile
+docker-compose.yml
+node_modules/
+# Eviter d'embarquer les cookies locaux s'ils traînent
+c411_cookies.json
+torr9_token.txt
