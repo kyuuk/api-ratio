@@ -85,10 +85,17 @@ async def get_stats(headless: bool = True) -> Dict[str, Any]:
             raise ScrappingError(f" Torr9: API Error {response.status}")
         
         api_data = await response.json()
-        up = api_data.get("total_uploaded_bytes", 0)
-        dl = api_data.get("total_downloaded_bytes", 0)
+        
+        # Bonus offerts par Torr9 (50 Go Up / 1 Go Down)
+        BONUS_UP = 50 * (1024**3) 
+        BONUS_DL = 1 * (1024**3)
+
+        up = float(api_data.get("total_uploaded_bytes", 0)) + BONUS_UP
+        dl = float(api_data.get("total_downloaded_bytes", 0)) + BONUS_DL
+        
         res["raw_upload"] = up
         res["raw_download"] = dl
+        res["raw_ratio"] = up / dl if dl > 0 else 0
 
         return res
     except (MissingCredentialsError, ScrappingError) as e:
