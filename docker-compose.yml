@@ -1,6 +1,6 @@
 services:
   scrap-ratio:
-    image: sabuontop/api-ratio:latest
+    image: ghcr.io/sabuontop/api-ratio:latest
     # build: .
     container_name: scrap-ratio-api
     restart: always

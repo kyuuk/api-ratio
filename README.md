@@ -6,49 +6,47 @@ Une API robuste et modulaire en **Python (FastAPI)** conçue pour scraper automa
 
 ## 🌟 Points Forts
 
+- **Prêt à l'emploi** : Images Docker officielles disponibles sur Docker Hub et GHCR.
 - **Automatisé** : Connexion automatique via Playwright pour gérer les sessions et le localStorage.
-- **Modulaire** : Architecture par "scrappers" permettant d'ajouter facilement de nouveaux trackers.
 - **Monitoring natif** : Expose des métriques au format Prometheus sur `/metrics`.
-- **Docker-Ready** : Image optimisée (Slim) pour un déploiement ultra-léger et rapide.
+- **Léger** : Image Docker optimisée (Slim) pour un déploiement ultra-léger et rapide.
 - **Sécurisé** : Gestion des identifiants via variables d'environnement (`.env`).
 
 ---
 
 ## 🛠️ Trackers Supportés
 
-- [x] **C411** (API Auth / Cloudflare compatible)
-- [x] **Torr9** (LocalStorage Token Auth)
+- [x] **C411** (API Auth / Auto-Login)
+- [x] **Torr9** (LocalStorage Token / Bonus inclus)
 - [x] **Gemini** (API Key Support)
 
 ---
 
-## 🚀 Installation & Déploiement
+## 🚀 Installation Rapide (Docker Compose)
 
-### Option 1 : Docker Compose (Recommandé)
+C'est la méthode de déploiement la plus simple et la plus rapide.
 
-1. Clonez le dépôt :
-   ```bash
-   git clone https://github.com/sabuontop/api-ratio.git
-   cd api-ratio
+1. Récupérez le fichier `docker-compose.yml` (ou créez-le) :
+   ```yaml
+   services:
+     scrap-ratio:
+       image: ghcr.io/sabuontop/api-ratio:latest # ou sabuontop/api-ratio:latest
+       container_name: scrap-ratio-api
+       restart: always
+       ports:
+         - "8679:8679"
+       env_file:
+         - .env
+       volumes:
+         - ./config:/app/.config
+       environment:
+         - CONFIG_DIR=/app/.config
    ```
 
-2. Configurez vos accès dans un fichier `.env` à la racine.
+2. Créez un fichier `.env` avec vos identifiants (voir la section Configuration ci-dessous).
 3. Lancez le service :
    ```bash
-   docker compose up -d --build
-   ```
-
-### Option 2 : Installation manuelle
-
-1. Installez les dépendances :
-   ```bash
-   pip install -r requirements.txt
-   playwright install chromium --with-deps
-   ```
-
-2. Lancez l'API :
-   ```bash
-   python api.py
+   docker compose up -d
    ```
 
 ---
