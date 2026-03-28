@@ -1,26 +1,33 @@
-# Utiliser l'image officielle Playwright avec Python pré-installé
-FROM mcr.microsoft.com/playwright/python:v1.49.0-jammy
+# Utiliser une image Python légère (Debian Bookworm)
+FROM python:3.12-slim-bookworm
 
 # Définir le dossier de travail
 WORKDIR /app
 
-# Copier les dépendances
-COPY requirements.txt .
+# Variable d'environnement pour Playwright (important)
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-# Installer les dépendances Python
+# Installation des dépendances système minimales pour Chromium
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    gnupg \
+    && pip install --no-cache-dir playwright \
+    && playwright install chromium --with-deps \
+    && apt-get purge -y --auto-remove wget gnupg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copier et installer les dépendances du projet
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Installer les navigateurs Playwright (Chromium seulement pour gagner de la place)
-RUN playwright install chromium --with-deps
-
-# Copier l'ensemble du projet
+# Copier le projet
 COPY . .
 
-# Créer le dossier de configuration avec les bonnes permissions
+# Permissions
 RUN mkdir -p .config && chmod 700 .config
 
-# Exposer le port de l'API
 EXPOSE 8679
 
-# Lancer l'application
 CMD ["python", "api.py"]
