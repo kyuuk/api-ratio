@@ -48,15 +48,18 @@ def parse_bytes(size_str: str) -> float:
     unit = parts[1].upper()
     return value * units.get(unit, 1)
 
-
-def load_file(filename, is_json: bool = False):
+def _get_config_dir() -> Path:
     config_dir = os.getenv("CONFIG_DIR", ".config")
     path = Path(config_dir)
     if not path.is_absolute():
         path = Path(__file__).parent / path
-    if not path.exists():
-        raise FileNotFoundError(f"File not found : {path}")
-    with open(path / filename, "r") as f:
+    return path
+
+def load_file(filename, is_json: bool = False):
+    config_dir = _get_config_dir()
+    if not config_dir.exists():
+        raise FileNotFoundError(f"Config directory not found : {config_dir}")
+    with open(config_dir / filename, "r") as f:
         if is_json:
             return json.load(f)
         else:
@@ -64,14 +67,10 @@ def load_file(filename, is_json: bool = False):
 
 
 def write_file(filename, content):
-    config_dir = os.getenv("CONFIG_DIR", ".config")
-    dir_path = Path(config_dir)
-    if not dir_path.is_absolute():
-        dir_path = Path(__file__).parent / dir_path
-    if not dir_path.exists():
-      dir_path.mkdir(parents=True, mode=0o700, exist_ok=True)
-      
-    file_path = dir_path / filename
+    config_dir = _get_config_dir()
+    if not config_dir.exists():
+      config_dir.mkdir(parents=True, mode=0o700, exist_ok=True)
+    file_path = config_dir / filename
     with open(file_path, "w") as f:
         f.write(content)
     file_path.chmod(0o600)
