@@ -50,6 +50,9 @@ TORR9_PASSWORD="votre_mot_de_passe"
 # C411
 C411_USER="votre_pseudo"
 C411_PASS="votre_mot_de_passe"
+
+# GEMINI-TRACKER
+GEMINI_TOKEN=your_api_token
 ```
 
 ---
@@ -62,10 +65,12 @@ python api.py
 ```
 L'API sera disponible sur `http://<VOTRE_IP>:8679/ratios`.
 
+Un endpoint prometheus est également disponible sur `http://<VOTRE_IP>:8679/metrics`
+
 ### Utiliser le script ponctuel
 Pour voir vos stats rapidement dans le terminal :
 ```bash
-python scrap_ratio.py --site both
+python scrap_ratio.py --site all
 ```
 
 ---
