@@ -26,14 +26,17 @@ download_gauge = Gauge("download", "download", ["tracker"], unit="bytes")
 async def update_all():
     global ratios_cache
     for site in list_scrappers():
-        logger.info(f"updating stats for tracker : {site}")
-        stats = await get_stats(site)
-        raw_ratio = stats["raw_upload"] / stats["raw_download"] if stats["raw_download"] > 0 else 999 if stats["raw_upload"] > 0 else 0
-        ratios_cache[site] = {**stats, "raw_ratio": raw_ratio, "last_updated": datetime.now().isoformat()}
+        try:
+            logger.info(f"updating stats for tracker : {site}")
+            stats = await get_stats(site)
+            raw_ratio = stats["raw_upload"] / stats["raw_download"] if stats["raw_download"] > 0 else 999 if stats["raw_upload"] > 0 else 0
+            ratios_cache[site] = {**stats, "raw_ratio": raw_ratio, "last_updated": datetime.now().isoformat()}
 
-        ratio_gauge.labels(tracker=site).set(ratios_cache[site]["raw_ratio"])
-        upload_gauge.labels(tracker=site).set(ratios_cache[site]["raw_upload"])
-        download_gauge.labels(tracker=site).set(ratios_cache[site]["raw_download"])
+            ratio_gauge.labels(tracker=site).set(ratios_cache[site]["raw_ratio"])
+            upload_gauge.labels(tracker=site).set(ratios_cache[site]["raw_upload"])
+            download_gauge.labels(tracker=site).set(ratios_cache[site]["raw_download"])
+        except Exception as e:
+            logger.error(f"Error while scrapping {site}: {e}")
 
 
 @asynccontextmanager
