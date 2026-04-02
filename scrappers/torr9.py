@@ -86,12 +86,11 @@ async def get_stats(headless: bool = True) -> Dict[str, Any]:
         
         api_data = await response.json()
         
-        # Bonus offerts par Torr9 (50 Go Up / 1 Go Down)
-        BONUS_UP = 50 * (1024**3) 
-        BONUS_DL = 1 * (1024**3)
+        bonus_up = float(api_data.get("bonus_uploaded", 0))
+        bonus_down = float(api_data.get("bonus_downloaded", 0))
 
-        up = float(api_data.get("total_uploaded_bytes", 0)) + BONUS_UP
-        dl = float(api_data.get("total_downloaded_bytes", 0)) + BONUS_DL
+        up = float(api_data.get("total_uploaded_bytes", 0)) + bonus_up
+        dl = float(api_data.get("total_downloaded_bytes", 0)) + bonus_down
         
         res["raw_upload"] = up
         res["raw_download"] = dl
