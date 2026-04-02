@@ -30,6 +30,7 @@ async def main():
                 print(f"Ratio: {stats['raw_upload'] / stats['raw_download'] if stats['raw_download'] > 0 else 999 if stats['raw_upload'] > 0 else 0}")
                 print(f"Upload: {format_bytes(stats['raw_upload'])}")
                 print(f"Download: {format_bytes(stats['raw_download'])}")
+                print(f"Bonus: {stats['bonus']}")
             else:
                 print(stats)
         except ScrappingError as e:

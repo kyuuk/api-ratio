@@ -32,8 +32,10 @@ async def get_stats(headless: bool = False) -> Dict[str, Any]:
 
         up = parse_bytes(api_data.get("uploaded", "0"))
         dl = parse_bytes(api_data.get("downloaded", "0"))
+        bonus = api_data.get("seedbonus", "0")
         res["raw_upload"] = up
         res["raw_download"] = dl
+        res["bonus"] = float(bonus) if bonus else 0.0
 
         return res
     except (MissingCredentialsError, ScrappingError) as e:
